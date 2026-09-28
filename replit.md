@@ -43,7 +43,8 @@ _Populate as you build — explicit user instructions worth remembering across s
 
 ## Gotchas
 
-_Populate as you build — sharp edges, "always run X before Y" rules._
+- Android uses Expo's managed configuration in `artifacts/medical-store/app.json`; a checked-in native `android/` Gradle folder is not required for the Replit preview.
+- Replit currently supports Android development and Expo Go preview, but does not directly build or download Android APK files. APK generation must use an external Android/Expo build environment after exporting the project.
 
 ## Pointers
 

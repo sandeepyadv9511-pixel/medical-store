@@ -17,7 +17,8 @@
       "bundleIdentifier": "com.srmedicalstore.app"
     },
     "android": {
-      "package": "com.srmedicalstore.app"
+      "package": "com.srmedicalstore.app",
+      "versionCode": 1
     },
     "web": {
       "favicon": "./assets/images/icon.png"
