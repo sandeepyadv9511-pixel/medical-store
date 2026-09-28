@@ -7,6 +7,7 @@ export interface Medicine {
   id: string;
   name: string;
   mrp: string;
+  rate: string;
   expiryDate: string;
   imageUri?: string;
 }
@@ -23,10 +24,10 @@ const MedicineContext = createContext<MedicineContextValue | null>(null);
 const STORAGE_KEY = '@medical-store/medicines/v1';
 
 const starterMedicines: Medicine[] = [
-  { id: 'starter-1', name: 'Paracetamol 500 mg', mrp: '24.50', expiryDate: '2027-03-15' },
-  { id: 'starter-2', name: 'Azithromycin 250 mg', mrp: '86.00', expiryDate: '2026-10-10' },
-  { id: 'starter-3', name: 'Cetirizine 10 mg', mrp: '32.00', expiryDate: '2026-08-30' },
-  { id: 'starter-4', name: 'ORS Lemon', mrp: '22.00', expiryDate: '2027-06-01' },
+  { id: 'starter-1', name: 'Paracetamol 500 mg', mrp: '24.50', rate: '20.00', expiryDate: '2027-03-15' },
+  { id: 'starter-2', name: 'Azithromycin 250 mg', mrp: '86.00', rate: '72.00', expiryDate: '2026-10-10' },
+  { id: 'starter-3', name: 'Cetirizine 10 mg', mrp: '32.00', rate: '27.00', expiryDate: '2026-08-30' },
+  { id: 'starter-4', name: 'ORS Lemon', mrp: '22.00', rate: '18.00', expiryDate: '2027-06-01' },
 ];
 
 function makeId() {
@@ -55,7 +56,11 @@ export function MedicineProvider({ children }: { children: ReactNode }) {
       try {
         const saved = await AsyncStorage.getItem(STORAGE_KEY);
         const parsed = saved ? (JSON.parse(saved) as Medicine[]) : starterMedicines;
-        if (mounted) setMedicines(Array.isArray(parsed) ? parsed : starterMedicines);
+        const normalized = (Array.isArray(parsed) ? parsed : starterMedicines).map((item) => ({
+          ...item,
+          rate: item.rate ?? item.mrp,
+        }));
+        if (mounted) setMedicines(normalized);
         if (!saved) await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(starterMedicines));
       } catch {
         if (mounted) setMedicines(starterMedicines);

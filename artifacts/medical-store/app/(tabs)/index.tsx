@@ -89,8 +89,16 @@ function MedicineCard({ item, onPress }: { item: Medicine; onPress: () => void }
         <Text style={[styles.medicineName, { color: colors.foreground }]} numberOfLines={2}>
           {item.name}
         </Text>
-        <Text style={[styles.cardLabel, { color: colors.mutedForeground }]}>MRP</Text>
-        <Text style={[styles.mrp, { color: colors.foreground }]}>₹{item.mrp}</Text>
+        <View style={styles.priceRow}>
+          <View>
+            <Text style={[styles.cardLabel, { color: colors.mutedForeground }]}>MRP</Text>
+            <Text style={[styles.mrp, { color: colors.foreground }]}>₹{item.mrp}</Text>
+          </View>
+          <View>
+            <Text style={[styles.cardLabel, { color: colors.mutedForeground }]}>Rate</Text>
+            <Text style={[styles.rate, { color: colors.primary }]}>₹{item.rate}</Text>
+          </View>
+        </View>
         <View style={styles.expiryRow}>
           <Feather name="calendar" size={13} color={colors.mutedForeground} />
           <Text style={[styles.expiryDate, { color: colors.mutedForeground }]}>
@@ -144,6 +152,10 @@ function DetailModal({
               <Text style={[styles.detailValue, { color: colors.foreground }]}>₹{medicine.mrp}</Text>
             </View>
             <View style={styles.detailCell}>
+              <Text style={[styles.detailLabel, { color: colors.mutedForeground }]}>Rate</Text>
+              <Text style={[styles.detailValue, { color: colors.primary }]}>₹{medicine.rate}</Text>
+            </View>
+            <View style={styles.detailCell}>
               <Text style={[styles.detailLabel, { color: colors.mutedForeground }]}>Expiry Date</Text>
               <Text style={[styles.detailValue, { color: colors.foreground }]}>{formatDate(medicine.expiryDate)}</Text>
             </View>
@@ -187,6 +199,7 @@ function MedicineFormModal({
   const medicine = isEditing ? editor : null;
   const [name, setName] = useState('');
   const [mrp, setMrp] = useState('');
+  const [rate, setRate] = useState('');
   const [expiryDate, setExpiryDate] = useState('');
   const [imageUri, setImageUri] = useState<string | undefined>();
   const [error, setError] = useState('');
@@ -195,10 +208,11 @@ function MedicineFormModal({
     if (editor === null) return;
     setName(medicine?.name ?? '');
     setMrp(medicine?.mrp ?? '');
+    setRate(medicine?.rate ?? medicine?.mrp ?? '');
     setExpiryDate(medicine?.expiryDate ?? '');
     setImageUri(medicine?.imageUri);
     setError('');
-  }, [editor, medicine?.expiryDate, medicine?.id, medicine?.imageUri, medicine?.mrp, medicine?.name]);
+  }, [editor, medicine?.expiryDate, medicine?.id, medicine?.imageUri, medicine?.mrp, medicine?.name, medicine?.rate]);
 
   const chooseImage = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
@@ -215,12 +229,14 @@ function MedicineFormModal({
 
   const save = async () => {
     const parsedMrp = Number(mrp);
+    const parsedRate = Number(rate);
     const validDate = /^\d{4}-\d{2}-\d{2}$/.test(expiryDate) && !Number.isNaN(new Date(`${expiryDate}T12:00:00`).getTime());
     if (!name.trim()) return setError('Medicine Name डालें');
     if (!mrp.trim() || Number.isNaN(parsedMrp) || parsedMrp <= 0) return setError('सही MRP डालें');
+    if (!rate.trim() || Number.isNaN(parsedRate) || parsedRate <= 0) return setError('सही Rate डालें');
     if (!validDate) return setError('Expiry Date YYYY-MM-DD में डालें');
 
-    const data = { name: name.trim(), mrp: parsedMrp.toFixed(2), expiryDate, imageUri };
+    const data = { name: name.trim(), mrp: parsedMrp.toFixed(2), rate: parsedRate.toFixed(2), expiryDate, imageUri };
     if (medicine) await updateMedicine({ ...medicine, ...data });
     else await addMedicine(data);
     await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
@@ -277,6 +293,19 @@ function MedicineFormModal({
                 testID="medicine-mrp-input"
                 value={mrp}
                 onChangeText={setMrp}
+                placeholder="0.00"
+                placeholderTextColor={colors.mutedForeground}
+                keyboardType="decimal-pad"
+                style={[styles.input, styles.rupeeTextInput, { color: colors.foreground, borderColor: colors.input, backgroundColor: colors.card }]}
+              />
+            </View>
+            <Text style={[styles.inputLabel, { color: colors.foreground }]}>Rate</Text>
+            <View style={styles.rupeeInput}>
+              <Text style={[styles.rupeeSymbol, { color: colors.mutedForeground }]}>₹</Text>
+              <TextInput
+                testID="medicine-rate-input"
+                value={rate}
+                onChangeText={setRate}
                 placeholder="0.00"
                 placeholderTextColor={colors.mutedForeground}
                 keyboardType="decimal-pad"
@@ -544,6 +573,8 @@ const styles = StyleSheet.create({
   medicineName: { fontSize: 16, fontWeight: '600', lineHeight: 21 },
   cardLabel: { fontSize: 10, marginTop: 7, textTransform: 'uppercase', letterSpacing: 0.7 },
   mrp: { fontSize: 16, fontWeight: '700', marginTop: 1 },
+  rate: { fontSize: 16, fontWeight: '700', marginTop: 1 },
+  priceRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 14 },
   expiryRow: { flexDirection: 'row', alignItems: 'center', gap: 5, marginTop: 7 },
   expiryDate: { fontSize: 11 },
   cardSide: { alignItems: 'flex-end', justifyContent: 'space-between', alignSelf: 'stretch', paddingVertical: 2 },
