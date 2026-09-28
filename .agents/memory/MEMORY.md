@@ -1,0 +1,1 @@
+- [Expo DevTools warning](expo-devtools-warning.md) — missing libglib can affect optional DevTools only; Metro may still be healthy.

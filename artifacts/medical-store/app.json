@@ -1,0 +1,28 @@
+{
+  "expo": {
+    "name": "Medical Store",
+    "slug": "medical-store",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/images/icon.png",
+    "scheme": "medical-store",
+    "userInterfaceStyle": "automatic",
+    "splash": {
+      "backgroundColor": "#F7FBFA",
+      "image": "./assets/images/icon.png",
+      "resizeMode": "contain"
+    },
+    "ios": {
+      "supportsTablet": false
+    },
+    "android": {},
+    "web": {
+      "favicon": "./assets/images/icon.png"
+    },
+    "plugins": ["expo-router"],
+    "experiments": {
+      "typedRoutes": true,
+      "reactCompiler": true
+    }
+  }
+}

@@ -1,0 +1,24 @@
+kind = "mobile"
+previewPath = "/medical-store/"
+title = "Medical Store"
+description = "A simple Hindi medicine management app for Android with local storage, fast search, medicine details, editing, deletion, images, and expiry status tracking."
+version = "1.0.0"
+id = "artifacts/medical-store"
+router = "expo-domain"
+
+[[services]]
+name = "expo"
+ensurePreviewReachable = "/status"
+paths = [ "/medical-store/" ]
+localPort = 23770
+
+[services.development]
+run = "pnpm --filter @workspace/medical-store run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/medical-store", "run", "build" ]
+run = [ "pnpm", "--filter", "@workspace/medical-store", "run", "serve" ]
+
+[services.env]
+PORT = "23770"
+BASE_PATH = "/medical-store/"

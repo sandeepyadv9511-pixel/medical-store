@@ -1,6 +1,6 @@
-# [Project name]
+# Medical Store
 
-_Replace the heading above with the project's name, and this line with one sentence describing what this app does for users._
+Android-friendly Hindi medicine inventory app for adding, searching, reviewing, editing, and deleting medicines with local persistence and expiry status.
 
 ## Run & Operate
 
@@ -22,15 +22,20 @@ _Replace the heading above with the project's name, and this line with one sente
 
 ## Where things live
 
-_Populate as you build — short repo map plus pointers to the source-of-truth file for DB schema, API contracts, theme files, etc._
+- `artifacts/medical-store/app/(tabs)/index.tsx` — main mobile screen, medicine list, search, details, and add/edit flows
+- `artifacts/medical-store/context/MedicineContext.tsx` — local medicine state and AsyncStorage persistence
+- `artifacts/medical-store/constants/colors.ts` — light/dark semantic theme tokens
+- `artifacts/medical-store/assets/images/icon.png` — generated Medical Store app icon
 
 ## Architecture decisions
 
-_Populate as you build — non-obvious choices a reader couldn't infer from the code (3-5 bullets)._
+- The first build is frontend-only and uses AsyncStorage so medicines survive app restarts without requiring a server or account.
+- Add and edit use the same bottom-sheet form; image selection uses Expo ImagePicker when the user chooses a gallery photo.
+- Expiry status is computed from the current date: expired, near expiry (within 90 days), or safe.
 
 ## Product
 
-_Describe the high-level user-facing capabilities of this app once they exist._
+Medical Store is a compact Hindi inventory tool for shop owners. It supports instant case-insensitive medicine search, medicine images, MRP and expiry tracking, details, edit/delete actions, validation, and clear expiry highlighting.
 
 ## User preferences
 
