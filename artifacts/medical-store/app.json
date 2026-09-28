@@ -1,11 +1,11 @@
 {
   "expo": {
-    "name": "Medical Store",
-    "slug": "medical-store",
+    "name": "SR Medical Store",
+    "slug": "srmedicalstore",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "medical-store",
+    "scheme": "srmedicalstore",
     "userInterfaceStyle": "automatic",
     "splash": {
       "backgroundColor": "#F7FBFA",
@@ -13,13 +13,18 @@
       "resizeMode": "contain"
     },
     "ios": {
-      "supportsTablet": false
+      "supportsTablet": false,
+      "bundleIdentifier": "com.srmedicalstore.app"
     },
-    "android": {},
+    "android": {
+      "package": "com.srmedicalstore.app"
+    },
     "web": {
       "favicon": "./assets/images/icon.png"
     },
-    "plugins": ["expo-router"],
+    "plugins": [
+      "expo-router"
+    ],
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
