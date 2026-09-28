@@ -546,7 +546,7 @@ export default function HomeScreen() {
               <View style={[styles.brandMark, { backgroundColor: colors.primary }]}>
                 <MaterialCommunityIcons name="plus" size={20} color={colors.primaryForeground} />
               </View>
-              <Text style={[styles.brand, { color: colors.foreground }]}>Medical Store</Text>
+              <Text style={[styles.brand, { color: colors.foreground }]}>SR Medical Store</Text>
             </View>
             <Text style={[styles.subtitle, { color: colors.mutedForeground }]}>दवाओं का आसान प्रबंधन</Text>
           </View>

@@ -1,4 +1,4 @@
-# Medical Store
+# SR Medical Store
 
 Android-friendly Hindi medicine inventory app for adding, searching, reviewing, editing, and deleting medicines with local persistence and expiry status.
 
@@ -35,7 +35,7 @@ Android-friendly Hindi medicine inventory app for adding, searching, reviewing, 
 
 ## Product
 
-Medical Store is a compact Hindi inventory tool for shop owners. It supports instant case-insensitive medicine search, medicine images, MRP and expiry tracking, details, edit/delete actions, validation, and clear expiry highlighting.
+SR Medical Store is a compact Hindi inventory tool for shop owners. It supports instant case-insensitive medicine search, medicine images, MRP, Rate and expiry tracking, details, edit/delete actions, validation, and clear expiry highlighting.
 
 ## User preferences
 
