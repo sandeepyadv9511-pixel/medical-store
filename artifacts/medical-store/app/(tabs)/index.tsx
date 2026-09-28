@@ -34,6 +34,27 @@ function formatDate(value: string) {
   return date.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
 }
 
+function parseIsoDate(value: string) {
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
+  if (!match) return null;
+  const date = new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]));
+  if (
+    date.getFullYear() !== Number(match[1]) ||
+    date.getMonth() !== Number(match[2]) - 1 ||
+    date.getDate() !== Number(match[3])
+  ) {
+    return null;
+  }
+  return date;
+}
+
+function toIsoDate(date: Date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
 function StatusPill({ expiryDate }: { expiryDate: string }) {
   const colors = useColors();
   const status = getMedicineStatus(expiryDate);
@@ -184,6 +205,107 @@ function DetailModal({
   );
 }
 
+function CalendarPicker({
+  visible,
+  month,
+  selectedDate,
+  onMonthChange,
+  onSelect,
+  onClose,
+}: {
+  visible: boolean;
+  month: Date;
+  selectedDate: string;
+  onMonthChange: (month: Date) => void;
+  onSelect: (date: Date) => void;
+  onClose: () => void;
+}) {
+  const colors = useColors();
+  const year = month.getFullYear();
+  const monthIndex = month.getMonth();
+  const firstDay = new Date(year, monthIndex, 1).getDay();
+  const daysInMonth = new Date(year, monthIndex + 1, 0).getDate();
+  const calendarCells = Array.from({ length: firstDay + daysInMonth }, (_, index) => index - firstDay + 1);
+  const weekdays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+  return (
+    <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
+      <View style={[styles.modalBackdrop, { backgroundColor: 'rgba(14, 37, 34, 0.44)' }]}>
+        <View style={[styles.calendarSheet, { backgroundColor: colors.background }]}>
+          <View style={styles.sheetHandle} />
+          <View style={styles.sheetHeader}>
+            <View>
+              <Text style={[styles.sheetTitle, { color: colors.foreground }]}>Expiry Date</Text>
+              <Text style={[styles.calendarHint, { color: colors.mutedForeground }]}>Calendar से date चुनें</Text>
+            </View>
+            <Pressable testID="close-calendar" onPress={onClose} style={styles.iconButton}>
+              <Feather name="x" size={22} color={colors.foreground} />
+            </Pressable>
+          </View>
+          <View style={styles.calendarNav}>
+            <Pressable
+              testID="previous-month"
+              onPress={() => onMonthChange(new Date(year, monthIndex - 1, 1))}
+              style={[styles.calendarNavButton, { borderColor: colors.border }]}
+            >
+              <Feather name="chevron-left" size={20} color={colors.foreground} />
+            </Pressable>
+            <Text style={[styles.calendarMonthTitle, { color: colors.foreground }]}>
+              {month.toLocaleDateString('en-IN', { month: 'long', year: 'numeric' })}
+            </Text>
+            <Pressable
+              testID="next-month"
+              onPress={() => onMonthChange(new Date(year, monthIndex + 1, 1))}
+              style={[styles.calendarNavButton, { borderColor: colors.border }]}
+            >
+              <Feather name="chevron-right" size={20} color={colors.foreground} />
+            </Pressable>
+          </View>
+          <View style={styles.weekdayRow}>
+            {weekdays.map((weekday) => (
+              <Text key={weekday} style={[styles.weekday, { color: colors.mutedForeground }]}>
+                {weekday}
+              </Text>
+            ))}
+          </View>
+          <View style={styles.calendarGrid}>
+            {calendarCells.map((day, index) => {
+              if (day < 1) return <View key={`blank-${index}`} style={styles.calendarDay} />;
+              const date = new Date(year, monthIndex, day);
+              const iso = toIsoDate(date);
+              const isSelected = iso === selectedDate;
+              const isToday = iso === toIsoDate(new Date());
+              return (
+                <Pressable
+                  key={iso}
+                  testID={`calendar-day-${day}`}
+                  onPress={() => onSelect(date)}
+                  style={[
+                    styles.calendarDay,
+                    isSelected && { backgroundColor: colors.primary },
+                    !isSelected && isToday && { borderColor: colors.primary, borderWidth: 1 },
+                  ]}
+                >
+                  <Text style={[styles.calendarDayText, { color: isSelected ? colors.primaryForeground : colors.foreground }]}>
+                    {day}
+                  </Text>
+                </Pressable>
+              );
+            })}
+          </View>
+          <Pressable
+            testID="calendar-today"
+            onPress={() => onSelect(new Date())}
+            style={[styles.todayButton, { backgroundColor: colors.secondary }]}
+          >
+            <Text style={[styles.todayButtonText, { color: colors.primary }]}>Today</Text>
+          </Pressable>
+        </View>
+      </View>
+    </Modal>
+  );
+}
+
 function MedicineFormModal({
   editor,
   onClose,
@@ -203,6 +325,8 @@ function MedicineFormModal({
   const [expiryDate, setExpiryDate] = useState('');
   const [imageUri, setImageUri] = useState<string | undefined>();
   const [error, setError] = useState('');
+  const [calendarOpen, setCalendarOpen] = useState(false);
+  const [calendarMonth, setCalendarMonth] = useState(() => new Date());
 
   useEffect(() => {
     if (editor === null) return;
@@ -227,6 +351,19 @@ function MedicineFormModal({
     }
   };
 
+  const openCalendar = () => {
+    const parsedDate = parseIsoDate(expiryDate);
+    const nextMonth = parsedDate ?? new Date();
+    setCalendarMonth(new Date(nextMonth.getFullYear(), nextMonth.getMonth(), 1));
+    setCalendarOpen(true);
+  };
+
+  const selectExpiryDate = async (date: Date) => {
+    setExpiryDate(toIsoDate(date));
+    setCalendarOpen(false);
+    await Haptics.selectionAsync();
+  };
+
   const save = async () => {
     const parsedMrp = Number(mrp);
     const parsedRate = Number(rate);
@@ -234,7 +371,7 @@ function MedicineFormModal({
     if (!name.trim()) return setError('Medicine Name डालें');
     if (!mrp.trim() || Number.isNaN(parsedMrp) || parsedMrp <= 0) return setError('सही MRP डालें');
     if (!rate.trim() || Number.isNaN(parsedRate) || parsedRate <= 0) return setError('सही Rate डालें');
-    if (!validDate) return setError('Expiry Date YYYY-MM-DD में डालें');
+    if (!validDate) return setError('Calendar से Expiry Date चुनें');
 
     const data = { name: name.trim(), mrp: parsedMrp.toFixed(2), rate: parsedRate.toFixed(2), expiryDate, imageUri };
     if (medicine) await updateMedicine({ ...medicine, ...data });
@@ -313,19 +450,18 @@ function MedicineFormModal({
               />
             </View>
             <Text style={[styles.inputLabel, { color: colors.foreground }]}>Expiry Date</Text>
-            <View style={styles.dateInputWrap}>
+            <Pressable testID="open-calendar" onPress={openCalendar} style={styles.dateInputWrap}>
               <TextInput
                 testID="medicine-expiry-input"
                 value={expiryDate}
-                onChangeText={setExpiryDate}
-                placeholder="YYYY-MM-DD"
+                placeholder="Calendar से date चुनें"
                 placeholderTextColor={colors.mutedForeground}
-                keyboardType="numbers-and-punctuation"
                 style={[styles.input, { color: colors.foreground, borderColor: colors.input, backgroundColor: colors.card }]}
-                maxLength={10}
+                editable={false}
+                pointerEvents="none"
               />
               <Feather name="calendar" size={19} color={colors.mutedForeground} style={styles.dateIcon} />
-            </View>
+            </Pressable>
             {error ? <Text style={[styles.errorText, { color: colors.destructive }]}>{error}</Text> : null}
             <Pressable
               testID="save-medicine"
@@ -338,6 +474,14 @@ function MedicineFormModal({
           </KeyboardAwareScrollViewCompat>
         </View>
       </View>
+      <CalendarPicker
+        visible={calendarOpen}
+        month={calendarMonth}
+        selectedDate={expiryDate}
+        onMonthChange={setCalendarMonth}
+        onSelect={selectExpiryDate}
+        onClose={() => setCalendarOpen(false)}
+      />
     </Modal>
   );
 }
@@ -619,6 +763,18 @@ const styles = StyleSheet.create({
   rupeeTextInput: { flex: 1, marginBottom: 0, paddingLeft: 34 },
   dateInputWrap: { position: 'relative' },
   dateIcon: { position: 'absolute', right: 16, top: 16 },
+  calendarSheet: { borderTopLeftRadius: 28, borderTopRightRadius: 28, paddingHorizontal: 20, paddingTop: 10, paddingBottom: 24 },
+  calendarHint: { fontSize: 12, marginTop: 4 },
+  calendarNav: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 },
+  calendarNavButton: { width: 40, height: 40, borderRadius: 13, borderWidth: 1, alignItems: 'center', justifyContent: 'center' },
+  calendarMonthTitle: { fontSize: 17, fontWeight: '700' },
+  weekdayRow: { flexDirection: 'row', marginBottom: 8 },
+  weekday: { width: '14.2857%', textAlign: 'center', fontSize: 11, fontWeight: '600' },
+  calendarGrid: { flexDirection: 'row', flexWrap: 'wrap' },
+  calendarDay: { width: '14.2857%', height: 44, alignItems: 'center', justifyContent: 'center', borderRadius: 13, marginBottom: 4 },
+  calendarDayText: { fontSize: 15, fontWeight: '600' },
+  todayButton: { minHeight: 46, borderRadius: 15, alignItems: 'center', justifyContent: 'center', marginTop: 10 },
+  todayButtonText: { fontSize: 15, fontWeight: '700' },
   errorText: { fontSize: 13, marginTop: -5, marginBottom: 12 },
   loadingOverlay: { position: 'absolute', top: 0, right: 0, bottom: 0, left: 0, alignItems: 'center', justifyContent: 'center', gap: 10 },
   loadingText: { fontSize: 14 },
